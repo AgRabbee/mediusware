@@ -8,14 +8,29 @@
 
 
     <div class="card">
-        <form action="" method="get" class="card-header">
+        <form action="{{ url('product/search') }}" method="post" class="card-header">
+            @csrf
             <div class="form-row justify-content-between">
                 <div class="col-md-2">
-                    <input type="text" name="title" placeholder="Product Title" class="form-control">
+                    <input type="text" name="title" placeholder="Product Title" class="form-control" value="{{ !empty($srch_title) ? $srch_title : '' }}">
                 </div>
                 <div class="col-md-2">
                     <select name="variant" id="" class="form-control">
+                        <optgroup label = "Color">
+                        @foreach($productVariant['color_variant'] as $varIndex=>$variant)
+                            <option value="{{ $varIndex }}"
+                                {{(!empty($srch_variant) && $srch_variant === $varIndex) ? 'selected' : ''}}
+                            >{{ $variant }}</option>
+                        @endforeach
+                        </optgroup>
 
+                        <optgroup label = "Size">
+                            @foreach($productVariant['size_variant'] as $varIndex=>$variant)
+                                <option value="{{ $varIndex }}"
+                                    {{(!empty($srch_variant) && $srch_variant === $varIndex) ? 'selected' : ''}}
+                                >{{ $variant }}</option>
+                            @endforeach
+                        </optgroup>
                     </select>
                 </div>
 
@@ -24,8 +39,8 @@
                         <div class="input-group-prepend">
                             <span class="input-group-text">Price Range</span>
                         </div>
-                        <input type="text" name="price_from" aria-label="First name" placeholder="From" class="form-control">
-                        <input type="text" name="price_to" aria-label="Last name" placeholder="To" class="form-control">
+                        <input type="text" name="price_from" aria-label="First name" placeholder="From" class="form-control" value="{{ !empty($srch_price_from) ? $srch_price_from : '' }}">
+                        <input type="text" name="price_to" aria-label="Last name" placeholder="To" class="form-control" value="{{ !empty($srch_price_to) ? $srch_price_to : '' }}">
                     </div>
                 </div>
                 <div class="col-md-2">
@@ -42,41 +57,44 @@
                 <table class="table">
                     <thead>
                     <tr>
-                        <th>#</th>
-                        <th>Title</th>
-                        <th>Description</th>
-                        <th>Variant</th>
-                        <th width="150px">Action</th>
+                        <th style="width:5%;">#</th>
+                        <th style="width:15%;">Title</th>
+                        <th style="width:35%;">Description</th>
+                        <th style="width:35%;">Variant</th>
+                        <th style="width:10%;">Action</th>
                     </tr>
                     </thead>
 
                     <tbody>
+                    @foreach($dataArr as $key=>$product)
+                        <tr>
+                            <td>{{ $product['sl'] }}</td>
+                            <td>{{ $product['title'] }} <br> Created at : {{ $product['time_age'] }}</td>
+                            <td>{{ $product['desc'] }}</td>
+                            <td>
+                                @foreach($product['variant'] as $v_index=> $v_val)
+                                <dl class="row mb-0" style="height: 80px; overflow: hidden" id="variant">
 
-                    <tr>
-                        <td>1</td>
-                        <td>T-Shirt <br> Created at : 25-Aug-2020</td>
-                        <td>Quality product in low cost</td>
-                        <td>
-                            <dl class="row mb-0" style="height: 80px; overflow: hidden" id="variant">
-
-                                <dt class="col-sm-3 pb-0">
-                                    SM/ Red/ V-Nick
-                                </dt>
-                                <dd class="col-sm-9">
-                                    <dl class="row mb-0">
-                                        <dt class="col-sm-4 pb-0">Price : {{ number_format(200,2) }}</dt>
-                                        <dd class="col-sm-8 pb-0">InStock : {{ number_format(50,2) }}</dd>
-                                    </dl>
-                                </dd>
-                            </dl>
-                            <button onclick="$('#variant').toggleClass('h-auto')" class="btn btn-sm btn-link">Show more</button>
-                        </td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <a href="{{ route('product.edit', 1) }}" class="btn btn-success">Edit</a>
-                            </div>
-                        </td>
-                    </tr>
+                                    <dt class="col-sm-3 pb-0">
+                                        {{ $v_val['color_size'] }}
+                                    </dt>
+                                    <dd class="col-sm-9">
+                                        <dl class="row mb-0">
+                                            <dt class="col-sm-6 pb-0">Price : {{ number_format($v_val['price'],2) }}</dt>
+                                            <dd class="col-sm-6 pb-0">InStock : {{ number_format($v_val['stock'],2) }}</dd>
+                                        </dl>
+                                    </dd>
+                                </dl>
+                                @endforeach
+                                <button onclick="$('#variant').toggleClass('h-auto')" class="btn btn-sm btn-link">Show more</button>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ route('product.edit', $product['sl']) }}" class="btn btn-success">Edit</a>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
 
                     </tbody>
 
@@ -88,10 +106,10 @@
         <div class="card-footer">
             <div class="row justify-content-between">
                 <div class="col-md-6">
-                    <p>Showing 1 to 10 out of 100</p>
+                    <p>Showing {{ $dataArr->firstItem() }} to {{ $dataArr->lastItem() }} out of {{$dataArr->total()}}</p>
                 </div>
-                <div class="col-md-2">
-
+                <div class="col-md-3">
+                    {{ $dataArr->links() }}
                 </div>
             </div>
         </div>
